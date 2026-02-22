@@ -13,12 +13,17 @@
             background: linear-gradient(to bottom right, #000428, #004e92);
             min-height: 100vh;
         }
+
+        [x-cloak] {
+            display: none !important;
+        }
     </style>
 </head>
 
 <body class="text-white font-sans antialiased" x-data="trackerApp()">
 
-    <div x-show="!nameSet" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm">
+    <div x-show="!nameSet" x-cloak
+        class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/90 backdrop-blur-sm">
         <div class="bg-slate-900 border border-white/20 p-8 rounded-3xl w-full max-w-sm text-center shadow-2xl">
             <div class="mb-6">
                 <div class="w-20 h-20 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -54,7 +59,7 @@
                 Al-Quran
             </button>
             <button class="bg-white/10 hover:bg-white/20 p-4 rounded-xl border border-white/10 transition">
-                Doa/Dzikir
+                Doa Harian
             </button>
         </div>
 
@@ -180,6 +185,34 @@
             </div>
         </div>
     </div>
+    <div class="h-32"></div>
+    <nav
+        class="fixed bottom-0 left-0 right-0 bg-slate-900/80 backdrop-blur-lg border-t border-white/10 pb-6 pt-3 px-6 z-50">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+
+            <a href="{{ route('home') }}"
+                class="flex flex-col items-center gap-1 transition-all {{ request()->routeIs('home') ? 'text-blue-400 scale-110' : 'text-white/40' }}">
+                <div class="text-xl">🏠</div>
+                <span class="text-[10px] font-medium">Home</span>
+            </a>
+
+            <a href="{{ route('dzikir') }}"
+                class="flex flex-col items-center gap-1 transition-all {{ request()->routeIs('dzikir') ? 'text-blue-400 scale-110' : 'text-white/40' }}">
+                <div class="text-xl">📿</div>
+                <span class="text-[10px] font-medium">Dzikir</span>
+            </a>
+
+            <a href="{{ route('profile') }}"
+                class="flex flex-col items-center gap-1 transition-all {{ request()->routeIs('profile') ? 'text-blue-400 scale-110' : 'text-white/40' }}">
+                <div class="text-xl">👤</div>
+                <span class="text-[10px] font-medium">User</span>
+            </a>
+
+        </div>
+    </nav>
+
+
+
 
     <script>
         function trackerApp() {
@@ -207,15 +240,31 @@
             
             ramadhanDay: 1,
 
-            init() {
+init() {
+                // 1. Jalankan update jam pertama kali
+                this.updateTime(); 
+
+                // 2. Set interval agar jam terus berjalan setiap detik
                 setInterval(() => {
-                    const now = new Date();
-                    this.currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
-                                     now.getMinutes().toString().padStart(2, '0');
+                    this.updateTime();
                 }, 1000);
+
+                // 3. Logika Edit Nama dari URL (agar pop-up muncul saat klik dari Profile)
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('edit')) {
+                    this.nameSet = false;
+                    this.tempName = this.name;
+                }
+
                 this.calculateRamadhanDay();
-                // Load data awal saat aplikasi dibuka
                 this.loadDailyData();
+            },
+
+            // Fungsi khusus untuk mengupdate jam
+            updateTime() {
+                const now = new Date();
+                this.currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
+                                 now.getMinutes().toString().padStart(2, '0');
             },
 
             // Fungsi navigasi tanggal
@@ -244,6 +293,11 @@
                     this.name = this.tempName;
                     localStorage.setItem('user_name', this.name);
                     this.nameSet = true;
+
+                    // Bersihkan URL tanpa reload halaman agar tanda ?edit=true hilang
+                    const url = new URL(window.location);
+                    url.searchParams.delete('edit');
+                    window.history.replaceState({}, '', url);
                 }
             },
 

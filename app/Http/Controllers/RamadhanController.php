@@ -13,6 +13,15 @@ class RamadhanController extends Controller
         return view('ramadhan.index');
     }
 
+    public function dzikir() {
+        return view('ramadhan.dzikir'); 
+        
+    }
+
+    public function profile() {
+        return view('ramadhan.profile');
+    }
+
     // Mengubah bahasa
     public function changeLanguage($lang)
     {

@@ -16,6 +16,12 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::get('/', [RamadhanController::class, 'index']);
+Route::get('/', [RamadhanController::class, 'index'])->name('home');
+
+
+Route::get('/dzikir', [RamadhanController::class, 'dzikir'])->name('dzikir');
+
+
+Route::get('/profile', [RamadhanController::class, 'profile'])->name('profile');
 
 Route::get('/change-language/{lang}', [RamadhanController::class, 'changeLanguage']);
