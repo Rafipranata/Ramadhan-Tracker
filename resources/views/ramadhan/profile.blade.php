@@ -53,6 +53,12 @@
             <input type="date" x-model="startDate" @change="saveSettings()"
                 class="bg-transparent text-blue-300 font-bold outline-none text-right">
         </div>
+
+        <div class="pt-4 pb-8 text-center">
+            <p class="text-[10px] uppercase tracking-[0.2em] text-white/20 font-medium">
+                Developed by <span class="text-blue-400/40">rafi.nataa</span>
+            </p>
+        </div>
     </div>
 </div>
 

@@ -56,11 +56,35 @@
 
         <div class="grid grid-cols-2 gap-4">
             <button class="bg-white/10 hover:bg-white/20 p-4 rounded-xl border border-white/10 transition">
-                Al-Quran
+                <a href="https://quran.pplgduta.my.id/" target="_blank" rel="noopener noreferrer">Al-Quran</a>
             </button>
-            <button class="bg-white/10 hover:bg-white/20 p-4 rounded-xl border border-white/10 transition">
+            <button @click="showDevModal = true"
+                class="bg-white/10 hover:bg-white/20 p-4 rounded-xl border border-white/10 transition">
                 Doa Harian
             </button>
+
+            <div x-show="showDevModal" x-cloak x-transition.opacity
+                class="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm">
+
+                <div @click.away="showDevModal = false"
+                    class="bg-slate-900 border border-white/20 p-8 rounded-3xl w-full max-w-sm text-center shadow-2xl">
+
+                    <div class="mb-6">
+                        <div
+                            class="w-20 h-20 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">
+                            ⚠️
+                        </div>
+                        <h2 class="text-2xl font-bold text-white">Mohon Maaf</h2>
+                        <p class="text-gray-400 text-sm mt-2">Fitur <b>Doa Harian</b> masih dalam tahap pengembangan
+                            oleh <b>rafi.nataa</b>. Nantikan di update selanjutnya! 🌙</p>
+                    </div>
+
+                    <button @click="showDevModal = false"
+                        class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-xl font-bold transition active:scale-95">
+                        Oke, Siap!
+                    </button>
+                </div>
+            </div>
         </div>
 
         <div class="bg-white/5 p-4 rounded-xl border border-white/10 flex items-center gap-3">
@@ -179,9 +203,48 @@
                 </div>
             </div>
 
-            <div x-show="activeTab === 'daily'" x-transition:enter.duration.300ms
-                class="text-center py-20 opacity-30 italic text-sm">
-                Fitur Daily Checklist sedang disiapkan... 🌙
+            <div x-show="activeTab === 'daily'" x-transition:enter.duration.300ms class="space-y-4">
+
+                <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 shadow-lg">
+                    <div class="flex gap-2">
+                        <input type="text" x-model="newDailyTask" @keydown.enter="addDailyTask()"
+                            placeholder="Buat target harian... (contoh: Sedekah)"
+                            class="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                        <button @click="addDailyTask()"
+                            class="bg-blue-600 hover:bg-blue-700 w-12 h-10 rounded-xl flex items-center justify-center font-bold transition shadow-lg shadow-blue-600/20">
+                            +
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <template x-for="(task, index) in dailyTaskMaster" :key="index">
+                        <div
+                            class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20 flex items-center justify-between group">
+                            <span class="font-medium" :class="isCompleted(task.name) ? 'opacity-40 line-through' : ''"
+                                x-text="task.name"></span>
+
+                            <div class="flex items-center gap-3">
+                                <button @click="removeDailyTask(index)"
+                                    class="text-red-400 opacity-0 group-hover:opacity-100 transition text-xs">Hapus</button>
+
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" :checked="isCompleted(task.name)"
+                                        @change="toggleTask(task.name)" class="sr-only peer">
+                                    <div
+                                        class="w-11 h-6 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <template x-if="dailyTasks.length === 0">
+                    <div class="text-center py-10 opacity-30 italic text-sm">
+                        Belum ada target harian. Yuk tambah targetmu! 🌙
+                    </div>
+                </template>
             </div>
         </div>
     </div>
@@ -236,109 +299,112 @@
             if(!dateString) return '';
             const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
             return new Date(dateString).toLocaleDateString('id-ID', options);
+            
+            
         },
             
             ramadhanDay: 1,
 
-init() {
-                // 1. Jalankan update jam pertama kali
-                this.updateTime(); 
+            init() 
+            {
+                    // 1. Jalankan update jam pertama kali
+                    this.updateTime(); 
 
-                // 2. Set interval agar jam terus berjalan setiap detik
-                setInterval(() => {
-                    this.updateTime();
-                }, 1000);
+                    // 2. Set interval agar jam terus berjalan setiap detik
+                    setInterval(() => {
+                        this.updateTime();
+                    }, 1000);
 
-                // 3. Logika Edit Nama dari URL (agar pop-up muncul saat klik dari Profile)
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.has('edit')) {
-                    this.nameSet = false;
-                    this.tempName = this.name;
-                }
+                    // 3. Logika Edit Nama dari URL (agar pop-up muncul saat klik dari Profile)
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.has('edit')) {
+                        this.nameSet = false;
+                        this.tempName = this.name;
+                    }
 
-                this.calculateRamadhanDay();
-                this.loadDailyData();
-            },
+                    this.calculateRamadhanDay();
+                    this.loadDailyData();
+                },
 
-            // Fungsi khusus untuk mengupdate jam
-            updateTime() {
-                const now = new Date();
-                this.currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
-                                 now.getMinutes().toString().padStart(2, '0');
-            },
+                // Fungsi khusus untuk mengupdate jam
+                updateTime() {
+                    const now = new Date();
+                    this.currentTime = now.getHours().toString().padStart(2, '0') + ':' + 
+                                    now.getMinutes().toString().padStart(2, '0');
+                },
 
-            // Fungsi navigasi tanggal
-            changeDate(offset) {
-                let d = new Date(this.currentViewDate);
-                d.setDate(d.getDate() + offset);
+                // Fungsi navigasi tanggal
+                changeDate(offset) {
+                    let d = new Date(this.currentViewDate);
+                    d.setDate(d.getDate() + offset);
+                    
+                    // Mencegah user melihat masa depan (opsional)
+                    if (d > new Date()) return;
+
+                    this.currentViewDate = d.toISOString().split('T')[0];
+                    this.loadDailyData();
+                    this.calculateRamadhanDay();
+                },
+
+                // Memuat data dari localstorage berdasarkan tanggal yang aktif
+                loadDailyData() {
+                    const date = this.currentViewDate;
+                    this.quranData.juz = localStorage.getItem(`${date}_quran_juz`) || '';
+                    this.quranData.surah = localStorage.getItem(`${date}_quran_surah`) || '';
+                    this.quranData.ayat = localStorage.getItem(`${date}_quran_ayat`) || '';
+                },
+
+                saveName() {
+                    if (this.tempName.trim()) {
+                        this.name = this.tempName;
+                        localStorage.setItem('user_name', this.name);
+                        this.nameSet = true;
+
+                        // Bersihkan URL tanpa reload halaman agar tanda ?edit=true hilang
+                        const url = new URL(window.location);
+                        url.searchParams.delete('edit');
+                        window.history.replaceState({}, '', url);
+                    }
+                },
+
+                saveSettings() {
+                    localStorage.setItem('ramadhan_start', this.startDate);
+                    this.calculateRamadhanDay();
+                },
+
+                calculateRamadhanDay() {
+                    if (!this.startDate) return;
+                    const start = new Date(this.startDate);
+                    // Menghitung ramadhan ke-n berdasarkan tanggal yang sedang DILIHAT
+                    const target = new Date(this.currentViewDate);
+                    
+                    start.setHours(0,0,0,0);
+                    target.setHours(0,0,0,0);
+                    
+                    const diffDays = Math.floor((target - start) / (1000 * 60 * 60 * 24)) + 1;
+                    this.ramadhanDay = diffDays > 0 ? diffDays : 1;
+                },
+
+                // --- LOGIKA SHOLAT (HISTORY BASED) ---
+                toggleCheck(sholat, tipe) {
+                    const date = this.currentViewDate;
+                    const id = `${date}_${sholat}_${tipe}`;
+                    const val = localStorage.getItem(id) === 'true';
+                    localStorage.setItem(id, !val);
+                },
+                getCheck(sholat, tipe) {
+                    const date = this.currentViewDate;
+                    return localStorage.getItem(`${date}_${sholat}_${tipe}`) === 'true';
+                },
+
+                // --- LOGIKA QURAN (HISTORY BASED) ---
+                quranData: { juz: '', surah: '', ayat: '' },
                 
-                // Mencegah user melihat masa depan (opsional)
-                if (d > new Date()) return;
-
-                this.currentViewDate = d.toISOString().split('T')[0];
-                this.loadDailyData();
-                this.calculateRamadhanDay();
-            },
-
-            // Memuat data dari localstorage berdasarkan tanggal yang aktif
-            loadDailyData() {
-                const date = this.currentViewDate;
-                this.quranData.juz = localStorage.getItem(`${date}_quran_juz`) || '';
-                this.quranData.surah = localStorage.getItem(`${date}_quran_surah`) || '';
-                this.quranData.ayat = localStorage.getItem(`${date}_quran_ayat`) || '';
-            },
-
-            saveName() {
-                if (this.tempName.trim()) {
-                    this.name = this.tempName;
-                    localStorage.setItem('user_name', this.name);
-                    this.nameSet = true;
-
-                    // Bersihkan URL tanpa reload halaman agar tanda ?edit=true hilang
-                    const url = new URL(window.location);
-                    url.searchParams.delete('edit');
-                    window.history.replaceState({}, '', url);
-                }
-            },
-
-            saveSettings() {
-                localStorage.setItem('ramadhan_start', this.startDate);
-                this.calculateRamadhanDay();
-            },
-
-            calculateRamadhanDay() {
-                if (!this.startDate) return;
-                const start = new Date(this.startDate);
-                // Menghitung ramadhan ke-n berdasarkan tanggal yang sedang DILIHAT
-                const target = new Date(this.currentViewDate);
-                
-                start.setHours(0,0,0,0);
-                target.setHours(0,0,0,0);
-                
-                const diffDays = Math.floor((target - start) / (1000 * 60 * 60 * 24)) + 1;
-                this.ramadhanDay = diffDays > 0 ? diffDays : 1;
-            },
-
-            // --- LOGIKA SHOLAT (HISTORY BASED) ---
-            toggleCheck(sholat, tipe) {
-                const date = this.currentViewDate;
-                const id = `${date}_${sholat}_${tipe}`;
-                const val = localStorage.getItem(id) === 'true';
-                localStorage.setItem(id, !val);
-            },
-            getCheck(sholat, tipe) {
-                const date = this.currentViewDate;
-                return localStorage.getItem(`${date}_${sholat}_${tipe}`) === 'true';
-            },
-
-            // --- LOGIKA QURAN (HISTORY BASED) ---
-            quranData: { juz: '', surah: '', ayat: '' },
-            
-            saveQuran() {
-                const date = this.currentViewDate;
-                localStorage.setItem(`${date}_quran_juz`, this.quranData.juz);
-                localStorage.setItem(`${date}_quran_surah`, this.quranData.surah);
-                localStorage.setItem(`${date}_quran_ayat`, this.quranData.ayat);
+                saveQuran() {
+                    const date = this.currentViewDate;
+                    localStorage.setItem(`${date}_quran_juz`, this.quranData.juz);
+                    localStorage.setItem(`${date}_quran_surah`, this.quranData.surah);
+                    localStorage.setItem(`${date}_quran_ayat`, this.quranData.ayat);
             },
 
             surahList: [
@@ -359,7 +425,73 @@ init() {
                 "Surah Al-Adiyat","Surah Al-Qari'ah","Surah At-Takatsur","Surah Al-Asr",
                 "Surah Al-Humazah","Surah Al-Fil","Surah Quraish","Surah Al-Ma'un","Surah Al-Kawthar",
                 "Surah Al-Kafirun","Surah An-Nasr","Surah Al-Masad","Surah Al-Ikhlas","Surah Al-Falaq","Surah An-Nas"
-            ]
+            ],
+            newDailyTask: '',
+        currentViewDate: new Date().toISOString().split('T')[0],
+        
+        // Ambil data master (daftar tugas apa saja yang ada)
+        dailyTaskMaster: JSON.parse(localStorage.getItem('daily_task_master')) || [
+            { name: 'Puasa Ramadhan' },
+            { name: 'Sedekah Subuh' }
+        ],
+
+        // Ambil data status centang (dipisah berdasarkan tanggal)
+        dailyStatusMap: JSON.parse(localStorage.getItem('daily_status_map')) || {},
+
+        // Fungsi Tambah Tugas ke Master (berlaku untuk semua hari)
+        addDailyTask() {
+            if (this.newDailyTask.trim() === '') return;
+            this.dailyTaskMaster.push({ name: this.newDailyTask });
+            this.newDailyTask = '';
+            this.saveMaster();
+        },
+
+        // Ambil data centang khusus untuk tanggal yang sedang dilihat
+        isCompleted(taskName) {
+            const dateKey = this.currentViewDate;
+            if (!this.dailyStatusMap[dateKey]) return false;
+            return this.dailyStatusMap[dateKey].includes(taskName);
+        },
+
+        // Fungsi Toggle Centang (Hanya simpan untuk tanggal aktif)
+        toggleTask(taskName) {
+            const dateKey = this.currentViewDate;
+            
+            if (!this.dailyStatusMap[dateKey]) {
+                this.dailyStatusMap[dateKey] = [];
+            }
+
+            const index = this.dailyStatusMap[dateKey].indexOf(taskName);
+            if (index > -1) {
+                // Jika sudah ada, hapus (uncheck)
+                this.dailyStatusMap[dateKey].splice(index, 1);
+            } else {
+                // Jika belum ada, tambah (check)
+                this.dailyStatusMap[dateKey].push(taskName);
+            }
+            
+            this.saveStatus();
+        },
+
+        saveMaster() {
+            localStorage.setItem('daily_task_master', JSON.stringify(this.dailyTaskMaster));
+        },
+
+        saveStatus() {
+            localStorage.setItem('daily_status_map', JSON.stringify(this.dailyStatusMap));
+        },
+
+        showDevModal: false,
+
+        // Fungsi Hapus Tugas dari Master
+        removeDailyTask(index) {
+            if(confirm('Hapus target ini dari semua hari?')) {
+                this.dailyTaskMaster.splice(index, 1);
+                this.saveMaster();
+            }
+        }
+
+            
         }
     }
     </script>
